@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}400 - Bad Request{% endblock %}
+{% block page_title %}Error 400{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 max-w-lg w-full text-center">
+    <div class="flex justify-center mb-6">
+      <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center">
+        <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+    </div>
+    
+    <h1 class="text-6xl font-extrabold text-blue-900 mb-2">400</h1>
+    <h2 class="text-xl font-bold text-slate-800 mb-4">Bad Request</h2>
+    
+    <p class="text-slate-500 mb-8 text-sm">
+      Oops! The server could not understand your request due to invalid syntax or incomplete data. Please check your submission.
+    </p>
+
+    <button onclick="window.history.back()" class="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-900 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors shadow-sm text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+      Go Back
+    </button>
+  </div>
+</div>
+{% endblock %}

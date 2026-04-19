@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-md">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold">Welcome back, {{ request.user.first_name }}! 👋</h2>
+      <p class="text-blue-200 mt-1 text-sm">
+        Here's an overview of your attendance system today.
+      </p>
+    </div>
+    <div class="hidden sm:flex items-center gap-3">
+      <div class="w-14 h-14 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Stat Cards ──────────────────────────────────────────────────────── -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+
+  <!-- Total Students -->
+  <div class="stat-card bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-medium">Total Students</p>
+        <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_students }}</p>
+        <p class="text-emerald-600 text-xs font-medium mt-1">
+          {{ enrolled_count }} face-enrolled
+        </p>
+      </div>
+      <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100">
+      <a href="{% url 'core:admin_list_students' %}"
+         class="text-blue-700 hover:text-blue-900 text-xs font-semibold flex items-center gap-1">
+        View all students →
+      </a>
+    </div>
+  </div>
+
+  <!-- Total Teachers -->
+  <div class="stat-card bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-medium">Total Teachers</p>
+        <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_teachers }}</p>
+        <p class="text-slate-400 text-xs font-medium mt-1">Active faculty members</p>
+      </div>
+      <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100">
+      <a href="{% url 'core:admin_list_teachers' %}"
+         class="text-amber-600 hover:text-amber-800 text-xs font-semibold flex items-center gap-1">
+        View all teachers →
+      </a>
+    </div>
+  </div>
+
+  <!-- Total Subjects -->
+  <div class="stat-card bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-medium">Total Subjects</p>
+        <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_subjects }}</p>
+        <p class="text-slate-400 text-xs font-medium mt-1">Academic courses</p>
+      </div>
+      <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100">
+      <a href="{% url 'core:admin_subjects' %}"
+         class="text-purple-600 hover:text-purple-800 text-xs font-semibold flex items-center gap-1">
+        Manage subjects →
+      </a>
+    </div>
+  </div>
+
+  <!-- Overall Attendance % -->
+  <div class="stat-card bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-medium">Overall Attendance</p>
+        <p class="text-3xl font-extrabold
+                  {% if attendance_pct >= 75 %}text-emerald-600
+                  {% elif attendance_pct >= 50 %}text-amber-600
+                  {% else %}text-rose-700{% endif %} mt-1">
+          {{ attendance_pct }}%
+        </p>
+        <p class="text-slate-400 text-xs font-medium mt-1">System-wide average</p>
+      </div>
+      <div class="w-12 h-12 
+                  {% if attendance_pct >= 75 %}bg-emerald-100{% elif attendance_pct >= 50 %}bg-amber-100{% else %}bg-rose-100{% endif %}
+                  rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 
+                    {% if attendance_pct >= 75 %}text-emerald-600{% elif attendance_pct >= 50 %}text-amber-600{% else %}text-rose-700{% endif %}"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+    </div>
+    <!-- Progress bar -->
+    <div class="mt-4 pt-4 border-t border-slate-100">
+      <div class="w-full bg-slate-100 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full
+                    {% if attendance_pct >= 75 %}bg-emerald-500{% elif attendance_pct >= 50 %}bg-amber-500{% else %}bg-rose-500{% endif %}"
+             style="width: {{ attendance_pct }}%"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Quick Actions + Recent Logs ──────────────────────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+      <span class="w-1 h-5 bg-amber-500 rounded-full inline-block"></span>
+      Quick Actions
+    </h3>
+    <div class="space-y-2">
+      <a href="{% url 'core:admin_add_student' %}"
+         class="flex items-center gap-3 w-full px-4 py-3 bg-blue-900 hover:bg-blue-800
+                text-white rounded-lg transition-colors duration-150 font-medium text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Enroll New Student
+      </a>
+
+      <a href="{% url 'core:admin_add_teacher' %}"
+         class="flex items-center gap-3 w-full px-4 py-3 bg-slate-100 hover:bg-slate-200
+                text-slate-700 rounded-lg transition-colors duration-150 font-medium text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+        Add New Teacher
+      </a>
+
+      <a href="{% url 'core:admin_subjects' %}"
+         class="flex items-center gap-3 w-full px-4 py-3 bg-slate-100 hover:bg-slate-200
+                text-slate-700 rounded-lg transition-colors duration-150 font-medium text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        Manage Subjects
+      </a>
+
+      <a href="{% url 'core:admin_logs' %}"
+         class="flex items-center gap-3 w-full px-4 py-3 bg-slate-100 hover:bg-slate-200
+                text-slate-700 rounded-lg transition-colors duration-150 font-medium text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Activity Logs
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Activity Log -->
+  <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+        <span class="w-1 h-5 bg-blue-700 rounded-full inline-block"></span>
+        Recent Activity
+      </h3>
+      <a href="{% url 'core:admin_logs' %}"
+         class="text-blue-700 hover:text-blue-900 text-xs font-medium">View all</a>
+    </div>
+
+    {% if recent_logs %}
+    <div class="space-y-1">
+      {% for log in recent_logs %}
+      <div class="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors">
+        <!-- Avatar dot -->
+        <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span class="text-blue-800 text-xs font-bold">
+            {% if log.actor %}{{ log.actor.first_name|first|upper }}{% else %}S{% endif %}
+          </span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-slate-700 text-sm leading-snug">{{ log.action }}</p>
+          <p class="text-slate-400 text-xs mt-0.5">
+            {% if log.actor %}<strong>{{ log.actor.get_full_name }}</strong> · {% endif %}
+            {{ log.timestamp|date:"M j, Y  H:i" }}
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-12 text-center">
+      <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+        <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586..." />
+        </svg>
+      </div>
+      <p class="text-slate-400 text-sm">No activity yet. Start by enrolling a student.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

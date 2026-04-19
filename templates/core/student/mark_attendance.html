@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Verify Face - {{ session.subject.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Mobile-focused layout */
+  body { background-color: #0f172a; color: #fff; }
+  #sidebar, header, footer { display: none !important; }
+  .lg\:ml-64 { margin-left: 0 !important; }
+  .page-content { padding: 0 !important; max-width: 100vw; overflow-x: hidden; }
+  
+  .glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  #video-container {
+    mask-image: radial-gradient(circle, white 80%, black 100%);
+    -webkit-mask-image: -webkit-radial-gradient(circle, white 80%, black 100%);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col justify-between p-4 pb-8 sm:p-6 sm:pb-10 max-w-md mx-auto w-full relative">
+
+  <!-- Header Info -->
+  <div class="glass-panel p-4 rounded-2xl mb-8 flex items-center justify-between z-10">
+    <div>
+      <h1 class="font-bold text-lg leading-tight">{{ session.subject.name }}</h1>
+      <p class="text-blue-300 text-xs font-medium">{{ session.date|date:"D, M j, Y" }}</p>
+    </div>
+    <a href="{% url 'core:student_dashboard' %}" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </a>
+  </div>
+
+  <!-- Camera Section -->
+  <div class="flex-1 flex flex-col items-center justify-center relative z-10">
+    
+    <!-- Video Wrapper -->
+    <div class="relative w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-slate-900 transition-all duration-300" id="video-wrapper">
+      
+      <video id="camera-video" class="w-full h-full object-cover transform -scale-x-100 hidden" autoplay playsinline muted></video>
+      
+      <!-- Placeholder while loading -->
+      <div id="video-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-800">
+        <svg class="w-10 h-10 text-slate-500 animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+        </svg>
+        <span class="text-xs text-slate-400">Requesting Camera...</span>
+      </div>
+
+    </div>
+
+    <!-- Instruction Text -->
+    <p id="instruction-text" class="text-center text-slate-300 text-sm mt-8 px-4 h-10">
+      Position your face inside the circle and ensure good lighting.
+    </p>
+
+  </div>
+
+  <!-- Controls Section -->
+  <div class="mt-4 z-10 w-full">
+    <button id="btn-verify" onclick="verifyFace()" disabled
+      class="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-lg font-bold rounded-2xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+      Verify My Face
+    </button>
+  </div>
+
+
+  <!-- ── MODALS (Absolute Overlays) ────────────────────────────────────── -->
+
+  <!-- Processing Modal -->
+  <div id="processing-modal" class="hidden absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center">
+    <div class="w-24 h-24 border-4 border-slate-700 border-t-amber-500 rounded-full animate-spin mb-6"></div>
+    <h3 class="text-xl font-bold text-white mb-2">Analyzing Face</h3>
+    <p class="text-slate-400 text-sm">Please wait while AI verifies your identity...</p>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="hidden absolute inset-0 bg-emerald-600 z-50 flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.3s_ease-out]">
+    <div class="w-28 h-28 bg-white text-emerald-600 rounded-full flex items-center justify-center shadow-2xl mb-6 scale-0 animate-[popIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_0.2s_forwards]">
+      <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h2 class="text-3xl font-bold text-white mb-2">Verified!</h2>
+    <p class="text-emerald-100 mb-8 max-w-xs">You have successfully been marked present for {{ session.subject.name }}.</p>
+    <a href="{% url 'core:student_dashboard' %}" class="px-8 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl font-semibold backdrop-blur-sm transition-colors">
+      Go to Dashboard
+    </a>
+  </div>
+
+  <!-- Error Modal -->
+  <div id="error-modal" class="hidden absolute inset-0 bg-slate-900/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-24 h-24 bg-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mb-6 border border-rose-500/50">
+      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h2 class="text-2xl font-bold text-white mb-2">Verification Failed</h2>
+    <p id="error-message" class="text-slate-400 mb-8 max-w-xs">Face did not match. Ensure good lighting.</p>
+    <button onclick="retryVerification()" class="px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold transition-colors w-full max-w-[200px]">
+      Try Again
+    </button>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<style>
+  @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+</style>
+<script>
+  const videoEl        = document.getElementById('camera-video');
+  const placeholder    = document.getElementById('video-placeholder');
+  const btnVerify      = document.getElementById('btn-verify');
+  const videoWrapper   = document.getElementById('video-wrapper');
+  
+  const processingModal= document.getElementById('processing-modal');
+  const successModal   = document.getElementById('success-modal');
+  const errorModal     = document.getElementById('error-modal');
+  const errorMsgEl     = document.getElementById('error-message');
+  
+  let stream = null;
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
+        audio: false
+      });
+      videoEl.srcObject = stream;
+      
+      videoEl.onloadedmetadata = () => {
+        videoEl.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        btnVerify.removeAttribute('disabled');
+      };
+    } catch (err) {
+      placeholder.innerHTML = `
+        <svg class="w-10 h-10 text-rose-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-xs text-rose-400 px-4 text-center">Camera Access Denied.<br>Please allow camera permissions.</span>
+      `;
+    }
+  }
+
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+  }
+
+  async function verifyFace() {
+    if (!stream) return;
+    
+    // Capture Photo
+    const canvas = document.createElement('canvas');
+    canvas.width = videoEl.videoWidth || 640;
+    canvas.height = videoEl.videoHeight || 640;
+    canvas.getContext('2d').drawImage(videoEl, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Show processing UI
+    processingModal.classList.remove('hidden');
+    videoWrapper.classList.replace('border-amber-500', 'border-blue-500');
+    
+    // Send to Backend
+    try {
+      const response = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+        body: JSON.stringify({ image: dataUrl })
+      });
+      
+      const data = await response.json();
+
+      if (data.success && data.task_id) {
+        pollVerifyTask(data.task_id);
+      } else {
+        processingModal.classList.add('hidden');
+        showError(data.error || "Verification failed.");
+      }
+    } catch (err) {
+      processingModal.classList.add('hidden');
+      showError("Network error. Please try again.");
+    }
+  }
+
+  async function pollVerifyTask(taskId) {
+    try {
+      const res = await fetch(`/task-status/${taskId}/`);
+      const data = await res.json();
+
+      if (data.state === 'SUCCESS') {
+        processingModal.classList.add('hidden');
+        if (data.success) {
+          stopCamera();
+          successModal.classList.remove('hidden');
+        } else {
+          showError(data.error || "Verification failed.");
+        }
+      } else if (data.state === 'FAILURE') {
+        processingModal.classList.add('hidden');
+        showError(data.error || "Server processing error.");
+      } else {
+        setTimeout(() => pollVerifyTask(taskId), 1500);
+      }
+    } catch (err) {
+      processingModal.classList.add('hidden');
+      showError("Network error while checking status.");
+    }
+  }
+
+  function showError(msg) {
+    videoWrapper.classList.replace('border-blue-500', 'border-rose-500');
+    errorMsgEl.textContent = msg;
+    errorModal.classList.remove('hidden');
+  }
+
+  function retryVerification() {
+    errorModal.classList.add('hidden');
+    videoWrapper.classList.replace('border-rose-500', 'border-amber-500');
+    // Camera is still running
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', startCamera);
+  
+  // Cleanup on leave
+  window.addEventListener('beforeunload', stopCamera);
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My Subjects{% endblock %}
+{% block page_title %}My Subjects{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex items-center justify-between">
+  <h3 class="font-bold text-lg text-slate-800">Enrolled Subjects</h3>
+  <span class="text-sm text-slate-400">View detailed attendance records per subject</span>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for data in subject_data %}
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-start justify-between bg-slate-50">
+      <div>
+        <h4 class="font-bold text-slate-800 text-lg">{{ data.subject.name }}</h4>
+        {% if data.subject.code %}
+          <p class="text-xs font-mono text-slate-500 mt-1">{{ data.subject.code }}</p>
+        {% endif %}
+      </div>
+      <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+        {{ data.subject.name|first|upper }}
+      </div>
+    </div>
+    
+    <!-- Body -->
+    <div class="p-6 flex-1 flex flex-col">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Instructor</p>
+          <p class="text-sm font-medium text-slate-700">{{ data.subject.teacher.get_full_name|default:"Not Assigned" }}</p>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-3 mb-6 bg-slate-50 rounded-xl p-4">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-emerald-600">{{ data.present }}</p>
+          <p class="text-[10px] uppercase font-bold text-slate-500 mt-1">Present</p>
+        </div>
+        <div class="text-center border-x border-slate-200">
+          <p class="text-2xl font-bold text-amber-500">{{ data.late }}</p>
+          <p class="text-[10px] uppercase font-bold text-slate-500 mt-1">Late</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-rose-500">{{ data.absent }}</p>
+          <p class="text-[10px] uppercase font-bold text-slate-500 mt-1">Absent</p>
+        </div>
+      </div>
+
+      <div class="mt-auto">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-slate-600">Attendance Rate</span>
+          <span class="text-sm font-bold {% if data.pct >= 80 %}text-emerald-600{% elif data.pct >= 50 %}text-amber-500{% else %}text-rose-600{% endif %}">
+            {{ data.pct }}%
+          </span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div class="h-2.5 rounded-full {% if data.pct >= 80 %}bg-emerald-500{% elif data.pct >= 50 %}bg-amber-400{% else %}bg-rose-500{% endif %}" style="width: {{ data.pct }}%"></div>
+        </div>
+        <p class="text-xs text-slate-400 mt-2 text-center">Based on {{ data.total }} total recorded sessions</p>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-span-full bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+    </div>
+    <h3 class="text-lg font-bold text-slate-700">No Subjects Yet</h3>
+    <p class="text-slate-500 mt-2 text-sm">You have not been assigned to any subjects. Please wait for an administrator to enroll you.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

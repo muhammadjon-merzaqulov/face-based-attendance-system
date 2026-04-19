@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Not Found{% endblock %}
+{% block page_title %}Error 404{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+  <div class="text-center w-full max-w-lg">
+    <!-- Icon or styling -->
+    <h1 class="text-8xl font-extrabold text-blue-900 mb-2 tracking-tighter drop-shadow-sm">
+        4<span class="text-amber-500">0</span>4
+    </h1>
+    <h2 class="text-2xl font-bold text-slate-800 mb-4">Lost in the System?</h2>
+    
+    <p class="text-slate-500 mb-8 text-sm max-w-md mx-auto">
+      We couldn't find the page you were looking for. It may have been moved, deleted, or never existed in the first place.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <button onclick="window.history.back()" class="w-full sm:w-auto px-6 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-colors shadow-sm text-sm">
+        Go Back
+      </button>
+      <a href="{% url 'core:dashboard_redirect' %}" class="w-full sm:w-auto px-6 py-2.5 bg-blue-900 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors shadow-sm text-sm">
+        Take Me Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

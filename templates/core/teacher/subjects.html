@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}My Subjects{% endblock %}
+{% block page_title %}My Subjects{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex items-center justify-between">
+  <h3 class="font-bold text-lg text-slate-800">Your Subjects</h3>
+  <span class="text-sm text-slate-400">Select a subject to view data or start attendance</span>
+</div>
+
+{% if subjects %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for subject in subjects %}
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+    <!-- Header -->
+    <a href="{% url 'core:teacher_subject_detail' subject.pk %}" class="block hover:bg-slate-50 transition-colors">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-start justify-between">
+        <div>
+          <h4 class="font-bold text-slate-800 text-lg">{{ subject.name }}</h4>
+          {% if subject.code %}
+            <p class="text-xs font-mono text-slate-500 mt-1">{{ subject.code }}</p>
+          {% endif %}
+        </div>
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+      </div>
+    </a>
+    
+    <!-- Body -->
+    <div class="p-5 flex-1 flex flex-col justify-between">
+      <div class="flex items-center gap-2 mb-4 text-slate-600 text-sm">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <span class="font-medium">{{ subject.students.count }}</span> students enrolled
+      </div>
+      
+      <div class="flex items-center gap-3 mt-auto">
+        <a href="{% url 'core:teacher_subject_detail' subject.pk %}" class="flex-1 text-center py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm transition-colors">
+          View History
+        </a>
+        <form action="{% url 'core:teacher_start_session' subject.pk %}" method="post" class="flex-1">
+          {% csrf_token %}
+          <button type="submit" class="w-full flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-150">
+            Start Session
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+  <h3 class="text-lg font-bold text-slate-700">No Subjects Assigned</h3>
+  <p class="text-slate-500 mt-2 text-sm">You haven't been assigned to any subjects yet. Please contact the administrator.</p>
+</div>
+{% endif %}
+{% endblock %}

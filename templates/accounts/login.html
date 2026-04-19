@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — AttendAI Smart Attendance System</title>
+  <meta name="description" content="Sign in to the AI-Based Smart Attendance System." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg {
+      background: linear-gradient(135deg, #0f2356 0%, #1a3a6e 50%, #1e4a8a 100%);
+    }
+    .float-animation { animation: float 6s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .input-focus:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
+      border-color: #f59e0b;
+    }
+  </style>
+</head>
+
+<body class="h-full gradient-bg flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md">
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Header Band -->
+      <div class="bg-blue-900 px-8 py-8 text-center">
+        <!-- Icon -->
+        <div class="float-animation inline-flex items-center justify-center w-16 h-16
+                    bg-amber-500 rounded-2xl mb-4 shadow-lg">
+          <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <h1 class="text-white font-bold text-2xl">AttendAI</h1>
+        <p class="text-blue-300 text-sm mt-1">Smart Attendance System</p>
+      </div>
+
+      <!-- Form -->
+      <div class="px-8 py-8">
+        <h2 class="text-slate-800 font-semibold text-xl mb-1">Welcome back</h2>
+        <p class="text-slate-500 text-sm mb-6">Sign in to your account to continue.</p>
+
+        <!-- Error banner -->
+        {% if error %}
+        <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 text-rose-700
+                    rounded-lg px-4 py-3 mb-6 text-sm">
+          <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+
+          <!-- Username -->
+          <div class="mb-4">
+            <label for="username" class="block text-slate-700 text-sm font-medium mb-1.5">
+              Username
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <input id="username" name="username" type="text" required autocomplete="username"
+                placeholder="Enter your username"
+                class="input-focus w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg
+                       text-slate-800 text-sm bg-slate-50 transition-all duration-150"
+                value="{{ request.POST.username|default:'' }}" />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-6">
+            <label for="password" class="block text-slate-700 text-sm font-medium mb-1.5">
+              Password
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <input id="password" name="password" type="password" required autocomplete="current-password"
+                placeholder="Enter your password"
+                class="input-focus w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg
+                       text-slate-800 text-sm bg-slate-50 transition-all duration-150" />
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="login-btn"
+            class="w-full bg-blue-900 hover:bg-blue-800 active:scale-95 text-white font-semibold
+                   py-3 rounded-lg transition-all duration-150 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center text-blue-300 text-xs mt-6">
+      AI-Based Smart Attendance System &copy; {% now "Y" %}
+    </p>
+  </div>
+
+  <script>
+    // Add loading state on submit
+    document.querySelector('form').addEventListener('submit', function() {
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        Signing in...`;
+    });
+  </script>
+</body>
+</html>

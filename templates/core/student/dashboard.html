@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <!-- Enrolled Subjects KPI -->
+  <a href="{% url 'core:student_subjects' %}" class="block">
+    <div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl p-6 text-white shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Enrolled Subjects</p>
+          <h2 class="text-4xl font-black">{{ subjects_count }}</h2>
+        </div>
+        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm text-blue-100">
+        <span class="mr-2">View subjects</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
+
+  <!-- Overall Attendance KPI -->
+  <a href="{% url 'core:student_subjects' %}" class="block">
+    <div class="bg-gradient-to-r {% if overall_pct >= 80 %}from-emerald-500 to-teal-500{% elif overall_pct >= 50 %}from-amber-500 to-orange-500{% else %}from-rose-500 to-red-500{% endif %} rounded-2xl p-6 text-white shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-white/80 text-sm font-semibold uppercase tracking-wider mb-1">Overall Attendance</p>
+          <h2 class="text-4xl font-black">{{ overall_pct }}%</h2>
+        </div>
+        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-between text-sm text-white/90">
+        <div class="flex-1 mr-4">
+          <div class="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-white h-1.5 rounded-full" style="width: {{ overall_pct }}%"></div>
+          </div>
+        </div>
+        <span class="mr-1">Details</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- Live Attendance Join Card -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-5 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
+    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+    </div>
+    <h3 class="font-bold text-slate-800 text-xl">Join Live Session</h3>
+  </div>
+  <div class="p-6">
+    <p class="text-slate-600 mb-6 ">Enter the 6-digit PIN displayed by your instructor to join the live attendance session and verify your face.</p>
+    <form action="{% url 'core:student_join_by_pin' %}" method="post" class="flex flex-col sm:flex-row gap-4 max-w-lg">
+      {% csrf_token %}
+      <div class="relative flex-1">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+        </div>
+          <input type="text" name="pin_code" maxlength="6" required placeholder="Session PIN (e.g., 123456)" class="pl-11 w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block py-2.5 outline-none font-mono tracking-wider text-center sm:text-left transition-all">
+      </div>
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors whitespace-nowrap shadow-sm flex items-center justify-center gap-2">
+        <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        Enter Session
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Avatar upload ring ── */
+  .avatar-ring {
+    position: relative;
+    display: inline-block;
+  }
+  .avatar-ring:hover .avatar-overlay {
+    opacity: 1;
+  }
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+  }
+
+  /* ── Tab styling ── */
+  .tab-btn {
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  .tab-btn.active {
+    color: #1e40af; /* blue-800 */
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #1e40af;
+    border-radius: 2px;
+  }
+
+  /* ── Input focus ── */
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+
+  /* ── Password strength bar ── */
+  .strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* ── Card shadow ── */
+  .profile-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.07);
+  }
+
+  /* ── Animate in ── */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+  .animate-up { animation: slideUp 0.3s ease-out both; }
+  .animate-up.delay-1 { animation-delay: 0.05s; }
+  .animate-up.delay-2 { animation-delay: 0.10s; }
+  .animate-up.delay-3 { animation-delay: 0.15s; }
+
+  /* Mobile touch fix for file input */
+  .file-input-hidden {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6 pb-10">
+
+  <!-- ── Profile Header Card ─────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl profile-card overflow-hidden animate-up">
+
+    <!-- Gradient banner -->
+    <div class="h-28 sm:h-36 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-700 relative">
+      <div class="absolute inset-0 opacity-10"
+           style="background-image: repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.05) 20px,rgba(255,255,255,.05) 40px)">
+      </div>
+      <!-- Role badge top-right -->
+      <span class="absolute top-4 right-4 bg-amber-400/90 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">
+        {{ request.user.get_role_display }}
+      </span>
+    </div>
+
+    <!-- Avatar + Name -->
+    <div class="px-4 sm:px-8 pb-6 -mt-12 sm:-mt-14 flex flex-col sm:flex-row items-center sm:items-end gap-4">
+
+      <!-- Avatar with click-to-upload -->
+      <div class="avatar-ring flex-shrink-0" id="avatarRing">
+        {% if request.user.profile_picture %}
+          <img id="avatarPreview"
+               src="{{ request.user.profile_picture.url }}"
+               alt="Profile Photo"
+               class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-lg" />
+        {% else %}
+          <div id="avatarInitials"
+               class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg
+                      bg-gradient-to-br from-blue-900 to-indigo-700
+                      flex items-center justify-center">
+            <span class="text-white font-bold text-3xl sm:text-4xl select-none">
+              {{ request.user.first_name|first|upper|default:request.user.username|first|upper }}
+            </span>
+          </div>
+        {% endif %}
+        <!-- Overlay: click triggers file input -->
+        <label class="avatar-overlay rounded-full" for="avatarFileInput" title="Change photo">
+          <svg class="w-6 h-6 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span class="text-white text-xs font-medium">Change</span>
+        </label>
+      </div>
+
+      <!-- Name + username -->
+      <div class="text-center sm:text-left pb-1 flex-1 min-w-0">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-800 truncate">
+          {% if request.user.get_full_name %}
+            {{ request.user.get_full_name }}
+          {% else %}
+            {{ request.user.username }}
+          {% endif %}
+        </h2>
+        <p class="text-slate-400 text-sm mt-0.5">@{{ request.user.username }}</p>
+        {% if request.user.email %}
+          <p class="text-slate-500 text-sm mt-1 flex items-center justify-center sm:justify-start gap-1.5">
+            <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            {{ request.user.email }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Quick profile picture change button (mobile friendly) -->
+      <label for="avatarFileInput"
+             class="flex-shrink-0 sm:self-end flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100
+                    text-blue-700 px-4 py-2 rounded-lg cursor-pointer transition-colors font-medium border border-blue-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Upload Photo
+      </label>
+
+    </div>
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl profile-card overflow-hidden animate-up delay-1">
+
+    <!-- Tab buttons -->
+    <div class="flex border-b border-slate-100 px-4 sm:px-6 overflow-x-auto">
+      <button id="tabInfoBtn"
+              class="tab-btn active text-sm font-medium text-slate-500 px-4 py-4 whitespace-nowrap"
+              onclick="switchTab('info')">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Personal Info
+        </span>
+      </button>
+      <button id="tabPasswordBtn"
+              class="tab-btn text-sm font-medium text-slate-500 px-4 py-4 whitespace-nowrap"
+              onclick="switchTab('password')">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          Change Password
+        </span>
+      </button>
+    </div>
+
+    <!-- ── Personal Info Panel ──────────────────────────────────────── -->
+    <div id="panelInfo" class="px-4 sm:px-6 py-6">
+      <form method="post" enctype="multipart/form-data" id="infoForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_info">
+        <input type="hidden" name="remove_picture" id="removePictureInput" value="false">
+
+        <!-- Hidden file input (triggered by avatar label) -->
+        <input type="file" id="avatarFileInput" name="profile_picture"
+               accept="image/jpeg,image/png,image/gif,image/webp"
+               class="hidden" onchange="handleFileSelect(this)">
+
+        <!-- Picture preview + remove strip (shown when a new pic is chosen) -->
+        <div id="picturePreviewStrip" class="hidden mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <div class="flex items-center gap-4">
+            <img id="stripPreviewImg" src="" alt="Preview" class="w-14 h-14 rounded-full object-cover border-2 border-blue-300 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-700" id="stripFileName">photo.jpg</p>
+              <p class="text-xs text-slate-400" id="stripFileSize"></p>
+            </div>
+            <button type="button" onclick="clearFileSelection()"
+                    class="text-rose-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remove current picture button (shown only when user has a pic and no new file selected) -->
+        {% if request.user.profile_picture %}
+        <div id="removePicSection" class="mb-6">
+          <button type="button" onclick="requestRemovePicture()"
+                  class="flex items-center gap-2 text-sm text-rose-500 hover:text-rose-700 font-medium
+                         px-3 py-2 rounded-lg hover:bg-rose-50 transition-colors border border-rose-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Remove current photo
+          </button>
+        </div>
+        {% endif %}
+
+        <!-- Form fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_first_name">
+              First Name
+            </label>
+            <input type="text" id="id_first_name" name="first_name"
+                   value="{{ request.user.first_name }}"
+                   class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800
+                          bg-slate-50 hover:border-slate-300 transition-colors"
+                   placeholder="First name">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_last_name">
+              Last Name
+            </label>
+            <input type="text" id="id_last_name" name="last_name"
+                   value="{{ request.user.last_name }}"
+                   class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800
+                          bg-slate-50 hover:border-slate-300 transition-colors"
+                   placeholder="Last name">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_email">
+              Email Address
+            </label>
+            <input type="email" id="id_email" name="email"
+                   value="{{ request.user.email }}"
+                   class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800
+                          bg-slate-50 hover:border-slate-300 transition-colors"
+                   placeholder="your@email.com">
+          </div>
+
+          <!-- Read-only: username -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Username</label>
+            <div class="flex items-center gap-2 w-full border border-slate-100 rounded-xl px-4 py-2.5
+                        bg-slate-100 text-sm text-slate-500">
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              {{ request.user.username }}
+            </div>
+          </div>
+
+          <!-- Read-only: role -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
+            <div class="flex items-center gap-2 w-full border border-slate-100 rounded-xl px-4 py-2.5
+                        bg-slate-100 text-sm text-slate-500">
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              {{ request.user.get_role_display }}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Member since -->
+        <p class="mt-5 text-xs text-slate-400 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Member since {{ request.user.date_joined|date:"M d, Y" }}
+        </p>
+
+        <!-- Submit -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <button type="submit"
+                  class="flex-1 sm:flex-none flex items-center justify-center gap-2
+                         bg-blue-900 hover:bg-blue-800 text-white
+                         px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Save Changes
+          </button>
+          <a href="{% url 'core:dashboard_redirect' %}"
+             class="flex-1 sm:flex-none flex items-center justify-center gap-2
+                    bg-slate-100 hover:bg-slate-200 text-slate-700
+                    px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Change Password Panel ────────────────────────────────────── -->
+    <div id="panelPassword" class="hidden px-4 sm:px-6 py-6">
+      <form method="post" id="passwordForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="change_password">
+
+        <div class="space-y-5">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_current_password">
+              Current Password
+            </label>
+            <div class="relative">
+              <input type="password" id="id_current_password" name="current_password"
+                     class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 pr-11 text-sm
+                            bg-slate-50 hover:border-slate-300 transition-colors"
+                     placeholder="Enter current password" autocomplete="current-password">
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      onclick="togglePwd('id_current_password', this)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="eyeIcon0">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_new_password">
+              New Password
+            </label>
+            <div class="relative">
+              <input type="password" id="id_new_password" name="new_password"
+                     class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 pr-11 text-sm
+                            bg-slate-50 hover:border-slate-300 transition-colors"
+                     placeholder="Min 8 characters" autocomplete="new-password"
+                     oninput="updateStrength(this.value)">
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      onclick="togglePwd('id_new_password', this)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+            <!-- Strength bar -->
+            <div class="mt-2 flex gap-1.5">
+              <div class="flex-1 bg-slate-100 rounded-full h-1 overflow-hidden">
+                <div id="strengthBar" class="strength-bar h-full w-0 bg-slate-300 rounded-full"></div>
+              </div>
+            </div>
+            <p id="strengthLabel" class="text-xs text-slate-400 mt-1"></p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5" for="id_confirm_password">
+              Confirm New Password
+            </label>
+            <div class="relative">
+              <input type="password" id="id_confirm_password" name="confirm_password"
+                     class="form-input w-full border border-slate-200 rounded-xl px-4 py-2.5 pr-11 text-sm
+                            bg-slate-50 hover:border-slate-300 transition-colors"
+                     placeholder="Repeat new password" autocomplete="new-password"
+                     oninput="checkMatch()">
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      onclick="togglePwd('id_confirm_password', this)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+            <p id="matchLabel" class="text-xs mt-1 hidden"></p>
+          </div>
+
+        </div>
+
+        <!-- Tips -->
+        <div class="mt-5 p-4 bg-amber-50 rounded-xl border border-amber-100">
+          <p class="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Password tips
+          </p>
+          <ul class="text-xs text-amber-600 space-y-1 list-disc list-inside">
+            <li>At least 8 characters long</li>
+            <li>Mix uppercase, lowercase, numbers &amp; symbols</li>
+            <li>Avoid using your name or username</li>
+          </ul>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <button type="submit"
+                  class="flex-1 sm:flex-none flex items-center justify-center gap-2
+                         bg-blue-900 hover:bg-blue-800 text-white
+                         px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            Update Password
+          </button>
+          <button type="reset"
+                  class="flex-1 sm:flex-none flex items-center justify-center gap-2
+                         bg-slate-100 hover:bg-slate-200 text-slate-700
+                         px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+            Clear
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Tab switching ──────────────────────────────────────────────────────
+  function switchTab(tab) {
+    const panels  = { info: 'panelInfo',     password: 'panelPassword' };
+    const buttons = { info: 'tabInfoBtn',    password: 'tabPasswordBtn' };
+    Object.keys(panels).forEach(key => {
+      document.getElementById(panels[key]).classList.toggle('hidden', key !== tab);
+      document.getElementById(buttons[key]).classList.toggle('active', key === tab);
+    });
+  }
+
+  // ── Avatar file selection ──────────────────────────────────────────────
+  function handleFileSelect(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+
+    // Show preview strip
+    const strip    = document.getElementById('picturePreviewStrip');
+    const stripImg = document.getElementById('stripPreviewImg');
+    const stripName = document.getElementById('stripFileName');
+    const stripSize = document.getElementById('stripFileSize');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      stripImg.src  = e.target.result;
+      // Also update the big avatar
+      const preview = document.getElementById('avatarPreview');
+      const initials = document.getElementById('avatarInitials');
+      if (preview) {
+        preview.src = e.target.result;
+      } else if (initials) {
+        // Replace initials div with an img
+        const img = document.createElement('img');
+        img.id  = 'avatarPreview';
+        img.src = e.target.result;
+        img.alt = 'Profile Photo';
+        img.className = 'w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-lg';
+        initials.replaceWith(img);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    stripName.textContent = file.name;
+    stripSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+    strip.classList.remove('hidden');
+
+    // Hide remove section when uploading new file
+    const removeSection = document.getElementById('removePicSection');
+    if (removeSection) removeSection.classList.add('hidden');
+    // Ensure remove flag is false
+    document.getElementById('removePictureInput').value = 'false';
+  }
+
+  function clearFileSelection() {
+    document.getElementById('avatarFileInput').value = '';
+    document.getElementById('picturePreviewStrip').classList.add('hidden');
+    const removeSection = document.getElementById('removePicSection');
+    if (removeSection) removeSection.classList.remove('hidden');
+  }
+
+  function requestRemovePicture() {
+    if (!confirm('Remove your current profile photo?')) return;
+    document.getElementById('removePictureInput').value = 'true';
+    document.getElementById('infoForm').submit();
+  }
+
+  // ── Password toggle visibility ─────────────────────────────────────────
+  function togglePwd(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    btn.querySelector('svg').style.opacity = show ? '0.5' : '1';
+  }
+
+  // ── Password strength meter ────────────────────────────────────────────
+  function updateStrength(val) {
+    const bar   = document.getElementById('strengthBar');
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8)                 score++;
+    if (/[A-Z]/.test(val))              score++;
+    if (/[0-9]/.test(val))              score++;
+    if (/[^A-Za-z0-9]/.test(val))      score++;
+
+    const map = [
+      { w: '0%',   color: '#e2e8f0', text: '' },
+      { w: '25%',  color: '#ef4444', text: 'Weak' },
+      { w: '50%',  color: '#f97316', text: 'Fair' },
+      { w: '75%',  color: '#eab308', text: 'Good' },
+      { w: '100%', color: '#22c55e', text: 'Strong' },
+    ];
+    const s = val.length === 0 ? 0 : score;
+    bar.style.width = map[s].w;
+    bar.style.backgroundColor = map[s].color;
+    label.textContent = map[s].text;
+    label.style.color = map[s].color;
+  }
+
+  function checkMatch() {
+    const np = document.getElementById('id_new_password').value;
+    const cp = document.getElementById('id_confirm_password').value;
+    const lbl = document.getElementById('matchLabel');
+    if (!cp) { lbl.classList.add('hidden'); return; }
+    lbl.classList.remove('hidden');
+    if (np === cp) {
+      lbl.textContent = '✓ Passwords match';
+      lbl.style.color = '#22c55e';
+    } else {
+      lbl.textContent = '✗ Passwords do not match';
+      lbl.style.color = '#ef4444';
+    }
+  }
+
+  // ── Open password tab if redirected with password error ───────────────
+  {% for message in messages %}
+    {% if 'password' in message.message|lower or 'Password' in message.message %}
+      switchTab('password');
+    {% endif %}
+  {% endfor %}
+</script>
+{% endblock %}

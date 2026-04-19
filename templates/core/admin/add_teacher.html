@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Add New Teacher{% endblock %}
+{% block page_title %}Add New Teacher{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+
+
+<div class="max-w-lg">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+      <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+      </div>
+      <h2 class="font-semibold text-slate-800">New Teacher Account</h2>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-slate-700 text-sm font-medium mb-1.5">First Name <span class="text-rose-500">*</span></label>
+          <input id="id_first_name" type="text" placeholder="John"
+            class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+        </div>
+        <div>
+          <label class="block text-slate-700 text-sm font-medium mb-1.5">Last Name <span class="text-rose-500">*</span></label>
+          <input id="id_last_name" type="text" placeholder="Smith"
+            class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Username <span class="text-rose-500">*</span></label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">@</span>
+          <input id="id_username" type="text" placeholder="teacher.username"
+            class="w-full pl-7 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Email Address</label>
+        <input id="id_email" type="email" placeholder="teacher@university.edu"
+          class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50
+                 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+      </div>
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Initial Password <span class="text-rose-500">*</span></label>
+        <input id="id_password" type="password" placeholder="Set a secure password"
+          class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50
+                 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <a href="{% url 'core:admin_list_teachers' %}"
+           class="flex-1 text-center px-4 py-2.5 border border-slate-200 rounded-lg text-slate-600
+                  hover:bg-slate-50 text-sm font-medium transition-colors">
+          Cancel
+        </a>
+        <button id="btn-submit" onclick="submitTeacher()"
+          class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-900 hover:bg-blue-800
+                 text-white rounded-lg text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Create Teacher
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function submitTeacher() {
+  const btn = document.getElementById('btn-submit');
+  const payload = {
+    first_name: document.getElementById('id_first_name').value.trim(),
+    last_name:  document.getElementById('id_last_name').value.trim(),
+    username:   document.getElementById('id_username').value.trim(),
+    email:      document.getElementById('id_email').value.trim(),
+    password:   document.getElementById('id_password').value,
+  };
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Creating...`;
+
+  const resp = await fetch(window.location.href, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+    body: JSON.stringify(payload),
+  });
+  const data = await resp.json();
+
+  if (data.success) {
+    if(typeof showToast === 'function') showToast(`🎉 ${data.message}`, 'success');
+    setTimeout(() => { window.location.href = '{% url "core:admin_list_teachers" %}'; }, 2000);
+  } else {
+    if(typeof showToast === 'function') showToast(`❌ ${data.error}`, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Create Teacher';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Manage Admins{% endblock %}
+{% block page_title %}Manage Admins{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-5">
+  <p class="text-slate-500 text-sm">{{ admins|length }} admin(s) in the system.</p>
+  <a href="{% url 'core:admin_add_admin' %}"
+     class="flex items-center gap-2 px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white
+            rounded-lg text-sm font-medium transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+    Add New Admin
+  </a>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="bg-slate-50 border-b border-slate-200">
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">#</th>
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Name</th>
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Username</th>
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Email</th>
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Role</th>
+        <th class="text-left px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Joined</th>
+        <th class="text-right px-5 py-3.5 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for admin in admins %}
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="px-5 py-4 text-slate-400 text-xs whitespace-nowrap">{{ forloop.counter }}</td>
+        <td class="px-5 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-3">
+            {% if admin.profile_picture %}
+              <img src="{{ admin.profile_picture.url }}" class="w-8 h-8 rounded-full object-cover border border-slate-200 flex-shrink-0" alt="{{ admin.get_full_name }}">
+            {% else %}
+              <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-rose-800 text-xs font-bold">
+                  {{ admin.first_name|first|upper|default:"A" }}{{ admin.last_name|first|upper }}
+                </span>
+              </div>
+            {% endif %}
+            <span class="font-medium text-slate-800">{{ admin.get_full_name }}</span>
+          </div>
+        </td>
+        <td class="px-5 py-4 text-slate-500 font-mono text-xs whitespace-nowrap">@{{ admin.username }}</td>
+        <td class="px-5 py-4 text-slate-500 whitespace-nowrap">{{ admin.email|default:"—" }}</td>
+        <td class="px-5 py-4 whitespace-nowrap">
+          <span class="bg-rose-100 text-rose-800 text-xs font-bold px-2 py-0.5 rounded-full">
+            ADMIN
+          </span>
+        </td>
+        <td class="px-5 py-4 text-slate-400 text-xs whitespace-nowrap">{{ admin.date_joined|date:"M j, Y" }}</td>
+        <td class="px-5 py-4 text-right whitespace-nowrap">
+          {% if request.user != admin %}
+          <div class="flex items-center justify-end gap-2">
+            <form action="{% url 'core:admin_delete_user' admin.pk %}" method="post" class="inline-block">
+              {% csrf_token %}
+              <button type="button" onclick="openConfirmModal(event)" data-confirm="Delete admin @{{ admin.username }} permanently?" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors" aria-label="Delete">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center py-16 text-slate-400">
+          <p>No admins added yet.</p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

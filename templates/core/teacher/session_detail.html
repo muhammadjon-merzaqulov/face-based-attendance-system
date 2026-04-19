@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Session Details - {{ session.subject.name }}{% endblock %}
+
+{% block page_title %}Session Details - {{ session.subject.name }} ({{ session.date }}){% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div class="flex-1">
+        <h2 class="text-xl font-bold text-slate-800">Attendance Roster</h2>
+        <p class="text-sm text-slate-500 mt-1">Review marking and edit manually if any errors occurred during the session.</p>
+      </div>
+      <div class="w-full sm:w-auto">
+        <a href="{% url 'core:teacher_dashboard' %}" class="inline-block w-full sm:w-auto text-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm transition-colors">
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Student List -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm whitespace-nowrap">
+        <thead class="bg-slate-50 text-slate-500 font-medium border-y border-slate-200">
+          <tr>
+            <th class="px-4 py-3">Student</th>
+            <th class="px-4 py-3">Time Marked</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for r in records %}
+            <tr class="hover:bg-slate-50/50 transition-colors" id="record-{{ r.student.pk }}">
+              <td class="px-4 py-4 flex items-center gap-3">
+                {% if r.student.profile_picture %}
+                  <img src="{{ r.student.profile_picture.url }}" class="w-8 h-8 rounded-full object-cover border border-slate-200 flex-shrink-0" alt="{{ r.student.get_full_name }}">
+                {% else %}
+                  <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700 text-xs flex-shrink-0">
+                    {{ r.student.first_name|first|upper }}{{ r.student.last_name|first|upper }}
+                  </div>
+                {% endif %}
+                <div class="min-w-0">
+                  <p class="font-semibold text-slate-800 truncate">{{ r.student.get_full_name }}</p>
+                  <p class="text-xs text-slate-400 truncate">@{{ r.student.username }}</p>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-slate-500 timestamp-cell">
+                {% if r.timestamp %}
+                  {{ r.timestamp|time:"H:i:s" }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="px-4 py-4 status-cell">
+                {% if r.status == 'PRESENT' %}
+                  <span class="inline-block bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-200">Present</span>
+                {% elif r.status == 'LATE' %}
+                  <span class="inline-block bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium border border-amber-200">Late</span>
+                {% else %}
+                  <span class="inline-block bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-medium border border-rose-200">Absent</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-4 text-right">
+                <select 
+                  class="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:outline-none p-2 status-select w-full sm:w-auto"
+                  data-student-id="{{ r.student.pk }}"
+                  onchange="updateAttendance(this)">
+                  <option value="PRESENT" {% if r.status == 'PRESENT' %}selected{% endif %}>Present</option>
+                  <option value="LATE" {% if r.status == 'LATE' %}selected{% endif %}>Late</option>
+                  <option value="ABSENT" {% if r.status == 'ABSENT' %}selected{% endif %}>Absent</option>
+                </select>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function updateAttendance(selectElement) {
+    const studentId = selectElement.getAttribute('data-student-id');
+    const newStatus = selectElement.value;
+    const row = document.getElementById(`record-${studentId}`);
+    
+    // Disable select temporarily
+    selectElement.disabled = true;
+    
+    try {
+      const response = await fetch("{% url 'core:teacher_update_attendance' session.pk %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+          student_id: studentId,
+          status: newStatus
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+        
+        // Update the status badge in the row
+        const statusCell = row.querySelector('.status-cell');
+        if (newStatus === 'PRESENT') {
+          statusCell.innerHTML = '<span class="inline-block bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-200">Present</span>';
+          if(row.querySelector('.timestamp-cell').innerText.trim() === '-') {
+            const now = new Date();
+            row.querySelector('.timestamp-cell').innerText = now.toLocaleTimeString([], { hour12: false });
+          }
+        } else if (newStatus === 'LATE') {
+          statusCell.innerHTML = '<span class="inline-block bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium border border-amber-200">Late</span>';
+          if(row.querySelector('.timestamp-cell').innerText.trim() === '-') {
+            const now = new Date();
+            row.querySelector('.timestamp-cell').innerText = now.toLocaleTimeString([], { hour12: false });
+          }
+        } else {
+          statusCell.innerHTML = '<span class="inline-block bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-medium border border-rose-200">Absent</span>';
+          row.querySelector('.timestamp-cell').innerText = '-';
+        }
+        
+      } else {
+        showToast(data.error || 'Failed to update attendance.', 'error');
+        // Reset select to old value if possible, simple reload here if error
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Network error while updating attendance.', 'error');
+    } finally {
+      selectElement.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

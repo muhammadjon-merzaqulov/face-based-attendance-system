@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ target_user.get_full_name }}{% endblock %}
+{% block page_title %}Edit {{ target_user.get_role_display }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{% if target_user.role == 'STUDENT' %}{% url 'core:admin_list_students' %}{% else %}{% url 'core:admin_list_teachers' %}{% endif %}"
+       class="p-2 rounded-lg text-slate-400 hover:bg-white hover:text-slate-600 hover:shadow-sm transition-all">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Edit Profile</h1>
+      <p class="text-slate-500 text-sm">Update basic information for @{{ target_user.username }}</p>
+    </div>
+  </div>
+
+  <form method="post" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    {% csrf_token %}
+    <div class="p-6 md:p-8 space-y-5">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-slate-700 text-sm font-medium mb-1.5">First Name <span class="text-rose-500">*</span></label>
+          <input name="first_name" type="text" value="{{ target_user.first_name }}" required
+                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-slate-700 text-sm font-medium mb-1.5">Last Name <span class="text-rose-500">*</span></label>
+          <input name="last_name" type="text" value="{{ target_user.last_name }}" required
+                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-colors" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Username <span class="text-rose-500">*</span></label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">@</span>
+          <input name="username" type="text" value="{{ target_user.username }}" required
+                 class="w-full pl-7 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-colors" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Email Address</label>
+        <input name="email" type="email" value="{{ target_user.email }}"
+               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-colors" />
+      </div>
+
+      <hr class="border-slate-100 my-4">
+
+      <div>
+        <label class="block text-slate-700 text-sm font-medium mb-1.5">Override Password</label>
+        <input name="password" type="password" placeholder="Leave blank to keep current password"
+               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-colors" />
+        <p class="text-slate-400 text-xs mt-1">If locked out, generating a new password here will immediately revoke old ones.</p>
+      </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+      <a href="{% if target_user.role == 'STUDENT' %}{% url 'core:admin_list_students' %}{% else %}{% url 'core:admin_list_teachers' %}{% endif %}" 
+         class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">
+        Cancel
+      </a>
+      <button type="submit" class="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-medium inline-flex items-center gap-2 transition-colors">
+        Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
