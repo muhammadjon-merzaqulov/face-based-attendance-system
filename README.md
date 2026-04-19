@@ -32,7 +32,7 @@ Ensure the following tools are installed on your host system:
 ### 2. Environment Setup
 Clone the repository and set up your `.env` variables from the example setup.
 ```bash
-git clone https://github.com/yourusername/cloud_computing.git
+git clone https://github.com/muhammadjon-merzaqulov/Face-Based-Attendance-System.git
 cd cloud_computing
 ```
 
