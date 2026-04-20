@@ -13,7 +13,7 @@ AttendAI is a modern, AI-powered attendance management system built for educatio
 
 ## 🛠 Tech Stack
 
-* **Backend Framework**: Django 6.0.
+* **Backend Framework**: Django 5.0.4
 * **Computer Vision**: DeepFace (ArcFace Embedding Models)
 * **Background Tasks**: Celery with Redis Broker
 * **Database**: PostgreSQL 15
